@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">📅 Timetable Generator</h1>
+        
+        <div class="mb-3">
+            <label for="faculty-count" class="form-label">Number of Faculty</label>
+            <input type="number" class="form-control" id="faculty-count" placeholder="Enter number of faculty" min="1" required>
+        </div>
+
+        <div id="faculty-inputs"></div>
+
+        <button class="btn btn-primary mt-3" onclick="generateTimetable()">Generate Timetable</button>
+        
+        <table class="table table-bordered mt-4" id="timetable">
+            <thead>
+                <tr>
+                    <th>Day / Period</th>
+                    <th>9-10 AM</th>
+                    <th>10-11 AM</th>
+                    <th>11-12 PM</th>
+                    <th>12-1 PM</th>
+                    <th>2-3 PM</th>
+                    <th>3-4 PM</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Timetable rows will be inserted here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Function to generate input fields for faculty details based on the number entered
+        document.getElementById('faculty-count').addEventListener('input', function() {
+            const count = parseInt(this.value);
+            const facultyInputs = document.getElementById('faculty-inputs');
+            facultyInputs.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                facultyInputs.innerHTML += `
+                    <div class="faculty-form mb-3">
+                        <h5>Faculty ${i + 1}</h5>
+                        <label for="faculty-name-${i}" class="form-label">Faculty Name</label>
+                        <input type="text" class="form-control" id="faculty-name-${i}" placeholder="Enter faculty name" required>
+                        
+                        <label for="subject-${i}" class="form-label mt-2">Subject Name</label>
+                        <input type="text" class="form-control" id="subject-${i}" placeholder="Enter subject name" required>
+                        
+                        <label for="course-code-${i}" class="form-label mt-2">Course Code</label>
+                        <input type="text" class="form-control" id="course-code-${i}" placeholder="Enter course code" required>
+                    </div>
+                `;
+            }
+        });
+
+        // Function to generate the timetable automatically
+        function generateTimetable() {
+            const facultyCount = parseInt(document.getElementById('faculty-count').value);
+            const timetableData = [];
+            
+            const facultyNames = [];
+            const subjectNames = [];
+            const courseCodes = [];
+            
+            // Collect all faculty, subject, and course details
+            for (let i = 0; i < facultyCount; i++) {
+                const facultyName = document.getElementById(`faculty-name-${i}`).value;
+                const subjectName = document.getElementById(`subject-${i}`).value;
+                const courseCode = document.getElementById(`course-code-${i}`).value;
+
+                facultyNames.push(facultyName);
+                subjectNames.push(subjectName);
+                courseCodes.push(courseCode);
+            }
+
+            const periods = ['9-10 AM', '10-11 AM', '11-12 PM', '12-1 PM', '2-3 PM', '3-4 PM'];
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            // Loop through the timetable days and periods
+            for (let day of days) {
+                for (let period of periods) {
+                    // Randomly assign a subject to each period and faculty
+                    const subjectIndex = Math.floor(Math.random() * subjectNames.length);
+                    const facultyIndex = Math.floor(Math.random() * facultyNames.length);
+
+                    timetableData.push({
+                        day: day,
+                        period: period,
+                        subject: `${subjectNames[subjectIndex]} (${courseCodes[subjectIndex]})`,
+                        faculty: facultyNames[facultyIndex]
+                    });
+                }
+            }
+
+            // Populate the timetable dynamically
+            const timetableBody = document.querySelector('#timetable tbody');
+            timetableBody.innerHTML = '';  // Clear previous timetable
+
+            // Loop through each day to create the timetable rows
+            for (let dayIndex = 0; dayIndex < days.length; dayIndex++) {
+                const row = document.createElement('tr');
+                const day = days[dayIndex];
+                
+                // Create the first cell with the day name
+                const dayCell = document.createElement('th');
+                dayCell.innerText = day;
+                row.appendChild(dayCell);
+
+                // Create cells for each period (9-10 AM, 10-11 AM, etc.)
+                for (let periodIndex = 0; periodIndex < periods.length; periodIndex++) {
+                    const cell = document.createElement('td');
+                    const timetableEntry = timetableData.find(item => item.day === day && item.period === periods[periodIndex]);
+                    if (timetableEntry) {
+                        cell.innerText = `${timetableEntry.subject}\n${timetableEntry.faculty}`;
+                    }
+                    row.appendChild(cell);
+                }
+                
+                timetableBody.appendChild(row);
+            }
+        }
+    </script>
+
+</body>
+</html>
